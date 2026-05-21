@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Hours</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header class="top-bar">
+    <div class="brand-heading">
+        <img th:src="@{/images/nh-hygiene-logo.png}" alt="NH Hygiene Services Ltd." class="brand-logo">
+        <div>
+            <p class="eyebrow">Time Tracking</p>
+            <h1>Work Hours</h1>
+        </div>
+    </div>
+    <nav class="top-nav" aria-label="Primary">
+        <a th:href="@{/employees}" class="secondary-button">Employees</a>
+        <a th:href="@{/contractors}" class="secondary-button">Contractors</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="secondary-button">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<main class="page">
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <section class="toolbar">
+        <form th:action="@{/work-hours}" method="get" class="search-form">
+            <select name="employeeId">
+                <option value="">All employees</option>
+                <option th:each="employee : ${employees}"
+                        th:value="${employee.id}"
+                        th:selected="${selectedEmployeeId != null && selectedEmployeeId == employee.id}"
+                        th:text="${employee.fullName}">
+                    Employee
+                </option>
+            </select>
+            <select name="paymentStatus">
+                <option value="">Paid and unpaid</option>
+                <option th:each="status : ${paymentStatuses}"
+                        th:value="${status}"
+                        th:selected="${selectedPaymentStatus != null && selectedPaymentStatus == status}"
+                        th:text="${status}">
+                    Status
+                </option>
+            </select>
+            <button type="submit" class="secondary-button">Filter</button>
+        </form>
+        <a th:href="@{/work-hours/new(employeeId=${selectedEmployeeId})}" class="primary-button">Add Work Hours</a>
+    </section>
+
+    <section class="table-panel">
+        <table>
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Employee</th>
+                <th>Regular</th>
+                <th>Overtime</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Notes</th>
+                <th class="actions-column">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="workHour : ${workHours}">
+                <td th:text="${#temporals.format(workHour.workDate, 'MMM d, yyyy')}">Jan 1, 2026</td>
+                <td th:text="${workHour.employee.fullName}">Employee Name</td>
+                <td th:text="${workHour.regularHours}">0.00</td>
+                <td th:text="${workHour.overtimeHours}">0.00</td>
+                <td th:text="${workHour.regularHours.add(workHour.overtimeHours)}">0.00</td>
+                <td>
+                    <span th:classappend="${workHour.paymentStatus.name() == 'PAID'} ? ' payment-paid' : (${workHour.paymentStatus.name() == 'PARTIAL'} ? ' payment-partial' : ' payment-unpaid')"
+                          class="payment-pill"
+                          th:text="${workHour.paymentStatus}">
+                        UNPAID
+                    </span>
+                    <span th:if="${workHour.paymentMethod != null}"
+                          class="payment-detail"
+                          th:text="${workHour.cashPaymentType != null ? workHour.paymentMethod + ' - ' + workHour.cashPaymentType : workHour.paymentMethod}">
+                        CASH
+                    </span>
+                    <span th:if="${workHour.paymentStatus.name() == 'PARTIAL'}"
+                          class="payment-detail"
+                          th:text="'Paid $' + ${workHour.partialPaymentAmount} + ' / Remaining $' + ${workHour.remainingPaymentAmount}">
+                        Paid $0.00 / Remaining $0.00
+                    </span>
+                </td>
+                <td th:text="${workHour.notes ?: '-'}">Notes</td>
+                <td>
+                    <div class="table-actions">
+                        <button th:if="${workHour.paymentStatus.name() != 'PAID'}"
+                                type="button"
+                                class="danger-button"
+                                th:attr="data-modal-target='payment-modal-' + ${workHour.id}">
+                            Pay
+                        </button>
+                        <a th:if="${workHour.paymentStatus.name() != 'PAID'}"
+                           th:href="@{/work-hours/{id}/edit(id=${workHour.id})}"
+                           class="secondary-button">
+                            Edit
+                        </a>
+                        <form th:if="${workHour.paymentStatus.name() != 'PAID'}"
+                              th:action="@{/work-hours/{id}/delete(id=${workHour.id})}"
+                              method="post">
+                            <button type="submit" class="danger-button">Delete</button>
+                        </form>
+                    </div>
+
+                    <div th:if="${workHour.paymentStatus.name() != 'PAID'}"
+                         th:id="'payment-modal-' + ${workHour.id}"
+                         class="modal-backdrop"
+                         hidden>
+                        <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+                            <div class="modal-header">
+                                <div>
+                                    <p class="eyebrow">Record Payment</p>
+                                    <h2 id="payment-title" th:text="${workHour.employee.fullName}">Employee</h2>
+                                </div>
+                                <button type="button" class="secondary-button modal-close">Close</button>
+                            </div>
+
+                            <div class="payment-summary">
+                                <span th:text="${#temporals.format(workHour.workDate, 'MMM d, yyyy')}">Jan 1, 2026</span>
+                                <span th:text="'Total $' + ${workHour.totalPaymentAmount}">Total $0.00</span>
+                                <span th:if="${workHour.paymentStatus.name() == 'PARTIAL'}"
+                                      th:text="'Remaining $' + ${workHour.remainingPaymentAmount}">Remaining $0.00</span>
+                            </div>
+
+                            <div class="modal-actions">
+                                <form th:action="@{/work-hours/{id}/pay(id=${workHour.id})}" method="post">
+                                    <input type="hidden" name="paymentMethod" value="E_PAYMENT">
+                                    <button type="submit" class="primary-button">E-Payment</button>
+                                </form>
+                                <button type="button" class="primary-button cash-toggle">Cash Payment</button>
+                            </div>
+
+                            <div class="cash-options" hidden>
+                                <form th:action="@{/work-hours/{id}/pay(id=${workHour.id})}" method="post">
+                                    <input type="hidden" name="paymentMethod" value="CASH">
+                                    <input type="hidden" name="cashPaymentType" value="FULL">
+                                    <button type="submit" class="primary-button">Full Payment</button>
+                                </form>
+                                <button type="button" class="primary-button partial-toggle">Partial Payment</button>
+                            </div>
+
+                            <form th:action="@{/work-hours/{id}/pay(id=${workHour.id})}"
+                                  method="post"
+                                  class="partial-payment-form"
+                                  hidden>
+                                <input type="hidden" name="paymentMethod" value="CASH">
+                                <input type="hidden" name="cashPaymentType" value="PARTIAL">
+                                <label>
+                                    Partial amount
+                                    <input type="number"
+                                           name="partialAmount"
+                                           min="0.01"
+                                           step="0.01"
+                                           th:max="${workHour.totalPaymentAmount}"
+                                           th:value="${workHour.paymentStatus.name() == 'PARTIAL' ? workHour.partialPaymentAmount : ''}"
+                                           required>
+                                </label>
+                                <button type="submit" class="primary-button">Save Partial Payment</button>
+                            </form>
+                        </section>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(workHours)}">
+                <td colspan="8" class="empty-state">No work hours recorded.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+<script>
+    document.querySelectorAll("[data-modal-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.getElementById(button.dataset.modalTarget).hidden = false;
+        });
+    });
+
+    document.querySelectorAll(".modal-close").forEach((button) => {
+        button.addEventListener("click", () => {
+            button.closest(".modal-backdrop").hidden = true;
+        });
+    });
+
+    document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+        backdrop.addEventListener("click", (event) => {
+            if (event.target === backdrop) {
+                backdrop.hidden = true;
+            }
+        });
+    });
+
+    document.querySelectorAll(".cash-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+            button.closest(".modal-panel").querySelector(".cash-options").hidden = false;
+        });
+    });
+
+    document.querySelectorAll(".partial-toggle").forEach((button) => {
+        button.addEventListener("click", () => {
+            button.closest(".modal-panel").querySelector(".partial-payment-form").hidden = false;
+        });
+    });
+</script>
+</body>
+</html>

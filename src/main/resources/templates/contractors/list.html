@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contractors</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header class="top-bar">
+    <div class="brand-heading">
+        <img th:src="@{/images/nh-hygiene-logo.png}" alt="NH Hygiene Services Ltd." class="brand-logo">
+        <div>
+            <p class="eyebrow">Contract Management</p>
+            <h1>Contractors</h1>
+        </div>
+    </div>
+    <nav class="top-nav" aria-label="Primary">
+        <a th:href="@{/employees}" class="secondary-button">Employees</a>
+        <a th:href="@{/work-hours}" class="secondary-button">Work Hours</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="secondary-button">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<main class="page">
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <section class="toolbar">
+        <form th:action="@{/contractors}" method="get" class="search-form">
+            <input type="search" name="search" placeholder="Search contractor" th:value="${search}">
+            <button type="submit" class="secondary-button">Search</button>
+        </form>
+        <a th:href="@{/contractors/new}" class="primary-button">Add Contractor</a>
+    </section>
+
+    <section class="table-panel">
+        <table class="contractor-table">
+            <thead>
+            <tr>
+                <th>Contractor</th>
+                <th>Phone</th>
+                <th>Paid To Date</th>
+                <th>Unpaid</th>
+                <th>Work Sites</th>
+                <th class="actions-column">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="contractor : ${contractors}">
+                <td th:text="${contractor.name}">Contractor Name</td>
+                <td th:text="${contractor.phoneNumber ?: '-'}">Phone</td>
+                <td th:text="${#numbers.formatCurrency(contractor.amountPaidToDate)}">$0.00</td>
+                <td>
+                    <span class="amount-unpaid" th:text="${#numbers.formatCurrency(contractor.amountUnpaid)}">$0.00</span>
+                </td>
+                <td>
+                    <div class="site-list" th:if="${!#lists.isEmpty(contractor.workSites)}">
+                        <div class="site-item" th:each="site : ${contractor.workSites}">
+                            <div>
+                                <strong th:text="${site.location}">Work site location</strong>
+                                <span th:text="${site.squareArea} + ' sq ft'">0 sq ft</span>
+                            </div>
+                            <div class="site-actions">
+                                <span th:text="${#numbers.formatCurrency(site.quotedAmount)}">$0.00</span>
+                                <a th:href="@{/contractors/{contractorId}/work-sites/{workSiteId}/edit(contractorId=${contractor.id},workSiteId=${site.id})}"
+                                   class="secondary-button compact-button">Edit</a>
+                                <form th:action="@{/contractors/{contractorId}/work-sites/{workSiteId}/delete(contractorId=${contractor.id},workSiteId=${site.id})}"
+                                      method="post">
+                                    <button type="submit" class="danger-button compact-button">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <span th:if="${#lists.isEmpty(contractor.workSites)}" class="muted-text">No work sites</span>
+                </td>
+                <td>
+                    <div class="table-actions">
+                        <a th:href="@{/contractors/{id}/work-sites/new(id=${contractor.id})}" class="secondary-button">Add Site</a>
+                        <a th:href="@{/contractors/{id}/edit(id=${contractor.id})}" class="secondary-button">Edit</a>
+                        <form th:action="@{/contractors/{id}/delete(id=${contractor.id})}" method="post">
+                            <button type="submit" class="danger-button">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(contractors)}">
+                <td colspan="6" class="empty-state">No contractors found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>
