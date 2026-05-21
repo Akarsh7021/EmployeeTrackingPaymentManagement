@@ -1,5 +1,7 @@
 package com.familybusiness.payroll.employee;
 
+import com.familybusiness.payroll.workhour.WorkHour;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,9 +9,12 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "employees")
@@ -37,6 +42,9 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EmploymentStatus employmentStatus = EmploymentStatus.ACTIVE;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkHour> workHours = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -92,5 +100,13 @@ public class Employee {
 
     public void setEmploymentStatus(EmploymentStatus employmentStatus) {
         this.employmentStatus = employmentStatus;
+    }
+
+    public List<WorkHour> getWorkHours() {
+        return workHours;
+    }
+
+    public void setWorkHours(List<WorkHour> workHours) {
+        this.workHours = workHours;
     }
 }

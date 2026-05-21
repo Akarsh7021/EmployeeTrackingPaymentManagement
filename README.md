@@ -11,6 +11,7 @@ This first phase sets up the foundation:
 - Local-only server binding on `127.0.0.1`
 - SQLite database storage
 - Employee create, read, update, delete, and search
+- Work-hour create, read, update, delete, employee filtering, and paid/unpaid tracking
 - Server-rendered HTML pages using Thymeleaf
 
 ## Architecture
@@ -20,6 +21,7 @@ The code is organized by feature and responsibility:
 - `config`: application-wide configuration, currently Spring Security
 - `home`: login and root routing
 - `employee`: employee entity, form DTO, repository, service, and controller
+- `workhour`: daily work-hour records connected to employees
 - `resources/templates`: Thymeleaf pages
 - `resources/static`: CSS and browser assets
 
@@ -33,7 +35,7 @@ The app uses a local SQLite file:
 spring.datasource.url=jdbc:sqlite:employee-payroll.db
 ```
 
-The database file is ignored by Git because it contains local business data.
+The database file is ignored by Git because it contains local business data. A fresh database is created from `src/main/resources/schema.sql` when the app starts.
 
 ## Login
 
@@ -57,14 +59,13 @@ com.familybusiness.payroll.EmployeeTrackingApplication
 The app opens at:
 
 ```text
-http://127.0.0.1:8080
+http://127.0.0.1:8081
 ```
 
 ## Next Phases
 
 1. Move admin credentials into the database with a setup screen.
-2. Add work hour tracking.
-3. Add payroll period calculation.
-4. Add payment history.
-5. Add weekly/monthly reports.
-6. Package as a desktop application.
+2. Add payroll period calculation.
+3. Move payment records into a full payment history table.
+4. Add weekly/monthly reports.
+5. Package as a desktop application.

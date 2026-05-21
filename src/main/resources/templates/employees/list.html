@@ -8,13 +8,20 @@
 </head>
 <body>
 <header class="top-bar">
-    <div>
-        <p class="eyebrow">Management</p>
-        <h1>Employees</h1>
+    <div class="brand-heading">
+        <img th:src="@{/images/nh-hygiene-logo.png}" alt="NH Hygiene Services Ltd." class="brand-logo">
+        <div>
+            <p class="eyebrow">Management</p>
+            <h1>Employees</h1>
+        </div>
     </div>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="secondary-button">Logout</button>
-    </form>
+    <nav class="top-nav" aria-label="Primary">
+        <a th:href="@{/contractors}" class="secondary-button">Contractors</a>
+        <a th:href="@{/work-hours}" class="secondary-button">Work Hours</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="secondary-button">Logout</button>
+        </form>
+    </nav>
 </header>
 
 <main class="page">
@@ -49,11 +56,14 @@
                 <td>
                     <span class="status-pill" th:text="${employee.employmentStatus}">ACTIVE</span>
                 </td>
-                <td class="table-actions">
-                    <a th:href="@{/employees/{id}/edit(id=${employee.id})}" class="secondary-button">Edit</a>
-                    <form th:action="@{/employees/{id}/delete(id=${employee.id})}" method="post">
-                        <button type="submit" class="danger-button">Delete</button>
-                    </form>
+                <td>
+                    <div class="table-actions">
+                        <a th:href="@{/work-hours/new(employeeId=${employee.id})}" class="secondary-button">Hours</a>
+                        <a th:href="@{/employees/{id}/edit(id=${employee.id})}" class="secondary-button">Edit</a>
+                        <form th:action="@{/employees/{id}/delete(id=${employee.id})}" method="post">
+                            <button type="submit" class="danger-button">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(employees)}">
