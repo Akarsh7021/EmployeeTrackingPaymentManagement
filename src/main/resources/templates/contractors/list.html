@@ -26,71 +26,145 @@
 
 <main class="page">
     <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
     <section class="toolbar">
         <form th:action="@{/contractors}" method="get" class="search-form">
             <input type="search" name="search" placeholder="Search contractor" th:value="${search}">
             <button type="submit" class="secondary-button">Search</button>
         </form>
-        <a th:href="@{/contractors/new}" class="primary-button">Add Contractor</a>
+        <div class="toolbar-actions">
+            <button type="button" class="primary-button" data-modal-target="work-site-modal">Add Work Site</button>
+            <a th:href="@{/contractors/new}" class="primary-button">Add Contractor</a>
+        </div>
     </section>
 
     <section class="table-panel">
         <table class="contractor-table">
             <thead>
             <tr>
-                <th>Contractor</th>
-                <th>Phone</th>
-                <th>Paid To Date</th>
-                <th>Unpaid</th>
-                <th>Work Sites</th>
-                <th class="actions-column">Actions</th>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Work Site Location</th>
+                <th>Area</th>
+                <th>Quoted</th>
+                <th class="actions-column">Action</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="contractor : ${contractors}">
-                <td th:text="${contractor.name}">Contractor Name</td>
-                <td th:text="${contractor.phoneNumber ?: '-'}">Phone</td>
-                <td th:text="${#numbers.formatCurrency(contractor.amountPaidToDate)}">$0.00</td>
+            <tr th:each="row : ${contractorRows}">
                 <td>
-                    <span class="amount-unpaid" th:text="${#numbers.formatCurrency(contractor.amountUnpaid)}">$0.00</span>
+                    <a th:href="@{/contractors/{id}(id=${row.contractor.id})}"
+                       class="contractor-link"
+                       th:text="${row.contractor.name}">
+                        Contractor Name
+                    </a>
                 </td>
-                <td>
-                    <div class="site-list" th:if="${!#lists.isEmpty(contractor.workSites)}">
-                        <div class="site-item" th:each="site : ${contractor.workSites}">
-                            <div>
-                                <strong th:text="${site.location}">Work site location</strong>
-                                <span th:text="${site.squareArea} + ' sq ft'">0 sq ft</span>
-                            </div>
-                            <div class="site-actions">
-                                <span th:text="${#numbers.formatCurrency(site.quotedAmount)}">$0.00</span>
-                                <a th:href="@{/contractors/{contractorId}/work-sites/{workSiteId}/edit(contractorId=${contractor.id},workSiteId=${site.id})}"
-                                   class="secondary-button compact-button">Edit</a>
-                                <form th:action="@{/contractors/{contractorId}/work-sites/{workSiteId}/delete(contractorId=${contractor.id},workSiteId=${site.id})}"
-                                      method="post">
-                                    <button type="submit" class="danger-button compact-button">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <span th:if="${#lists.isEmpty(contractor.workSites)}" class="muted-text">No work sites</span>
-                </td>
+                <td th:text="${row.contractor.phoneNumber ?: '-'}">Phone</td>
+                <td th:text="${row.hasWorkSite() ? row.workSite.location : '-'}">Location</td>
+                <td th:text="${row.hasWorkSite() ? row.workSite.squareArea + ' sq ft' : '-'}">0 sq ft</td>
+                <td th:text="${row.hasWorkSite() ? #numbers.formatCurrency(row.workSite.quotedAmount) : '-'}">$0.00</td>
                 <td>
                     <div class="table-actions">
-                        <a th:href="@{/contractors/{id}/work-sites/new(id=${contractor.id})}" class="secondary-button">Add Site</a>
-                        <a th:href="@{/contractors/{id}/edit(id=${contractor.id})}" class="secondary-button">Edit</a>
-                        <form th:action="@{/contractors/{id}/delete(id=${contractor.id})}" method="post">
-                            <button type="submit" class="danger-button">Delete</button>
+                        <a th:if="${row.hasWorkSite()}"
+                           th:href="@{/contractors/{contractorId}/work-sites/{workSiteId}/edit(contractorId=${row.contractor.id},workSiteId=${row.workSite.id})}"
+                           class="secondary-button">
+                            Edit Site
+                        </a>
+                        <form th:if="${row.hasWorkSite()}"
+                              th:action="@{/contractors/{contractorId}/work-sites/{workSiteId}/delete(contractorId=${row.contractor.id},workSiteId=${row.workSite.id})}"
+                              method="post">
+                            <button type="submit" class="danger-button">Delete Site</button>
                         </form>
+                        <button th:if="${!row.hasWorkSite()}"
+                                type="button"
+                                class="secondary-button row-site-button"
+                                th:attr="data-contractor-id=${row.contractor.id}">
+                            Add Site
+                        </button>
+                        <a th:href="@{/contractors/{id}/edit(id=${row.contractor.id})}" class="secondary-button">Edit Contractor</a>
                     </div>
                 </td>
             </tr>
-            <tr th:if="${#lists.isEmpty(contractors)}">
+            <tr th:if="${#lists.isEmpty(contractorRows)}">
                 <td colspan="6" class="empty-state">No contractors found.</td>
             </tr>
             </tbody>
         </table>
     </section>
+
+    <div id="work-site-modal" class="modal-backdrop" hidden>
+        <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="work-site-title">
+            <div class="modal-header">
+                <div>
+                    <p class="eyebrow">Contractor Work Site</p>
+                    <h2 id="work-site-title">Add Work Site</h2>
+                </div>
+                <button type="button" class="secondary-button modal-close">Close</button>
+            </div>
+
+            <form th:action="@{/contractors/work-sites}" method="post" class="form-stack">
+                <label>
+                    Contractor
+                    <select name="contractorId" id="modal-contractor-id" required>
+                        <option value="">Select contractor</option>
+                        <option th:each="contractor : ${contractors}"
+                                th:value="${contractor.id}"
+                                th:text="${contractor.name}">
+                            Contractor
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    Work Site Location
+                    <input type="text" name="location" placeholder="House, building, or site address" required>
+                </label>
+
+                <div class="form-grid">
+                    <label>
+                        Quoted Amount
+                        <input type="number" name="quotedAmount" min="0" step="0.01" required>
+                    </label>
+
+                    <label>
+                        Square Area
+                        <input type="number" name="squareArea" min="0" step="0.01" required>
+                    </label>
+                </div>
+
+                <button type="submit" class="primary-button">Save Work Site</button>
+            </form>
+        </section>
+    </div>
 </main>
+<script>
+    document.querySelectorAll("[data-modal-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.getElementById(button.dataset.modalTarget).hidden = false;
+        });
+    });
+
+    document.querySelectorAll(".row-site-button").forEach((button) => {
+        button.addEventListener("click", () => {
+            document.getElementById("modal-contractor-id").value = button.dataset.contractorId;
+            document.getElementById("work-site-modal").hidden = false;
+        });
+    });
+
+    document.querySelectorAll(".modal-close").forEach((button) => {
+        button.addEventListener("click", () => {
+            button.closest(".modal-backdrop").hidden = true;
+        });
+    });
+
+    document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+        backdrop.addEventListener("click", (event) => {
+            if (event.target === backdrop) {
+                backdrop.hidden = true;
+            }
+        });
+    });
+</script>
 </body>
 </html>

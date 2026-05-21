@@ -19,6 +19,12 @@ public class ContractorForm {
     @Size(max = 30, message = "Phone number must be 30 characters or less")
     private String phoneNumber;
 
+    @Size(max = 255, message = "Address must be 255 characters or less")
+    private String address;
+
+    @Size(max = 1000, message = "Notes must be 1000 characters or less")
+    private String notes;
+
     @NotNull(message = "Amount paid is required")
     @DecimalMin(value = "0.00", message = "Amount paid cannot be negative")
     @Digits(integer = 8, fraction = 2, message = "Amount paid must use dollars and cents")
@@ -34,6 +40,8 @@ public class ContractorForm {
         form.setId(contractor.getId());
         form.setName(contractor.getName());
         form.setPhoneNumber(contractor.getPhoneNumber());
+        form.setAddress(contractor.getAddress());
+        form.setNotes(contractor.getNotes());
         form.setAmountPaidToDate(contractor.getAmountPaidToDate());
         form.setAmountUnpaid(contractor.getAmountUnpaid());
         return form;
@@ -61,6 +69,22 @@ public class ContractorForm {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public BigDecimal getAmountPaidToDate() {

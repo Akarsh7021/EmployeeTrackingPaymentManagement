@@ -24,9 +24,17 @@ public class ContractorController {
 
     @GetMapping
     public String listContractors(@RequestParam(required = false) String search, Model model) {
-        model.addAttribute("contractors", contractorService.findContractors(search));
+        model.addAttribute("contractors", contractorService.findContractors(null));
+        model.addAttribute("contractorRows", contractorService.findContractorRows(search));
+        model.addAttribute("workSiteForm", new WorkSiteForm());
         model.addAttribute("search", search);
         return "contractors/list";
+    }
+
+    @GetMapping("/{id}")
+    public String contractorDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("contractor", contractorService.getContractor(id));
+        return "contractors/detail";
     }
 
     @GetMapping("/new")
@@ -48,9 +56,9 @@ public class ContractorController {
             return "contractors/form";
         }
 
-        contractorService.createContractor(contractorForm);
+        Contractor contractor = contractorService.createContractor(contractorForm);
         redirectAttributes.addFlashAttribute("message", "Contractor added.");
-        return "redirect:/contractors";
+        return "redirect:/contractors/" + contractor.getId();
     }
 
     @GetMapping("/{id}/edit")
@@ -76,7 +84,7 @@ public class ContractorController {
 
         contractorService.updateContractor(id, contractorForm);
         redirectAttributes.addFlashAttribute("message", "Contractor updated.");
-        return "redirect:/contractors";
+        return "redirect:/contractors/" + id;
     }
 
     @PostMapping("/{id}/delete")
@@ -112,6 +120,25 @@ public class ContractorController {
         }
 
         contractorService.createWorkSite(contractorId, workSiteForm);
+        redirectAttributes.addFlashAttribute("message", "Work site added.");
+        return "redirect:/contractors/" + contractorId;
+    }
+
+    @PostMapping("/work-sites")
+    public String createSelectedContractorWorkSite(
+            @Valid @ModelAttribute WorkSiteForm workSiteForm,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (workSiteForm.getContractorId() == null) {
+            bindingResult.rejectValue("contractorId", "required", "Contractor is required");
+        }
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("error", "Choose a contractor and enter valid work site details.");
+            return "redirect:/contractors";
+        }
+
+        contractorService.createWorkSite(workSiteForm.getContractorId(), workSiteForm);
         redirectAttributes.addFlashAttribute("message", "Work site added.");
         return "redirect:/contractors";
     }

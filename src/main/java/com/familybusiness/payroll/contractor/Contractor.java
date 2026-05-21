@@ -27,6 +27,12 @@ public class Contractor {
     @Column(length = 30)
     private String phoneNumber;
 
+    @Column(length = 255)
+    private String address;
+
+    @Column(length = 1000)
+    private String notes;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amountPaidToDate = BigDecimal.ZERO;
 
@@ -58,6 +64,22 @@ public class Contractor {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public BigDecimal getAmountPaidToDate() {

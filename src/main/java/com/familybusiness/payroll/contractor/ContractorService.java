@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,6 +28,21 @@ public class ContractorService {
         contractors.forEach(contractor ->
                 contractor.getWorkSites().sort(Comparator.comparing(WorkSite::getLocation, String.CASE_INSENSITIVE_ORDER)));
         return contractors;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContractorListRow> findContractorRows(String search) {
+        List<ContractorListRow> rows = new ArrayList<>();
+        for (Contractor contractor : findContractors(search)) {
+            if (contractor.getWorkSites().isEmpty()) {
+                rows.add(new ContractorListRow(contractor, null));
+                continue;
+            }
+            for (WorkSite workSite : contractor.getWorkSites()) {
+                rows.add(new ContractorListRow(contractor, workSite));
+            }
+        }
+        return rows;
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +104,8 @@ public class ContractorService {
     private void copyFormToContractor(ContractorForm form, Contractor contractor) {
         contractor.setName(form.getName().trim());
         contractor.setPhoneNumber(cleanOptionalText(form.getPhoneNumber()));
+        contractor.setAddress(cleanOptionalText(form.getAddress()));
+        contractor.setNotes(cleanOptionalText(form.getNotes()));
         contractor.setAmountPaidToDate(form.getAmountPaidToDate());
         contractor.setAmountUnpaid(form.getAmountUnpaid());
     }

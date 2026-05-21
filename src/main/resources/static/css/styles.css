@@ -78,6 +78,11 @@ h1 {
     margin-bottom: 18px;
 }
 
+.toolbar-actions {
+    display: flex;
+    gap: 10px;
+}
+
 .brand-heading {
     align-items: center;
     display: flex;
@@ -247,6 +252,20 @@ tr:last-child td {
     font-weight: 800;
 }
 
+.contractor-link {
+    border-radius: 6px;
+    color: var(--primary-dark);
+    display: inline-flex;
+    font-weight: 800;
+    padding: 7px 9px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.contractor-link:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
 .muted-text {
     color: var(--muted);
 }
@@ -295,6 +314,84 @@ tr:last-child td {
 
 .site-actions form {
     display: inline-flex;
+}
+
+.detail-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 22px;
+}
+
+.info-box,
+.detail-section,
+.site-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.info-box {
+    display: grid;
+    gap: 8px;
+    min-height: 96px;
+    padding: 16px;
+}
+
+.info-box span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.info-box strong {
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.detail-notes {
+    grid-column: span 2;
+}
+
+.detail-section {
+    padding: 18px;
+}
+
+.section-heading {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.section-heading h2 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.site-card-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.site-card {
+    background: #f4fbf8;
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+}
+
+.site-card strong {
+    font-size: 16px;
+}
+
+.site-card span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
 }
 
 .status-pill {
@@ -500,6 +597,7 @@ tr:last-child td {
     .top-bar,
     .top-nav,
     .toolbar,
+    .toolbar-actions,
     .form-actions {
         align-items: stretch;
         flex-direction: column;
@@ -528,5 +626,19 @@ tr:last-child td {
 
     .search-form {
         display: grid;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-notes {
+        grid-column: auto;
+    }
+
+    .site-item,
+    .site-actions {
+        align-items: stretch;
+        flex-direction: column;
     }
 }

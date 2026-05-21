@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS contractors (
     id INTEGER PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     phone_number VARCHAR(30),
+    address VARCHAR(255),
+    notes VARCHAR(1000),
     amount_paid_to_date NUMERIC(10, 2) NOT NULL DEFAULT 0,
     amount_unpaid NUMERIC(10, 2) NOT NULL DEFAULT 0
 );

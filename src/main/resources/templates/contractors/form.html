@@ -25,7 +25,7 @@
           class="form-panel">
 
         <label>
-            Contractor Name
+            Full Name
             <input type="text" th:field="*{name}" required>
             <span class="field-error" th:errors="*{name}"></span>
         </label>
@@ -34,6 +34,18 @@
             Phone Number
             <input type="text" th:field="*{phoneNumber}">
             <span class="field-error" th:errors="*{phoneNumber}"></span>
+        </label>
+
+        <label>
+            Address
+            <textarea th:field="*{address}" rows="3"></textarea>
+            <span class="field-error" th:errors="*{address}"></span>
+        </label>
+
+        <label>
+            Notes
+            <textarea th:field="*{notes}" rows="4"></textarea>
+            <span class="field-error" th:errors="*{notes}"></span>
         </label>
 
         <div class="form-grid">
