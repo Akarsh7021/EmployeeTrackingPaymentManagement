@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS employees (
 CREATE TABLE IF NOT EXISTS work_hours (
     id INTEGER PRIMARY KEY,
     employee_id INTEGER NOT NULL,
+    work_site_id INTEGER,
     work_date DATE NOT NULL,
     regular_hours NUMERIC(5, 2) NOT NULL DEFAULT 0,
     overtime_hours NUMERIC(5, 2) NOT NULL DEFAULT 0,
@@ -24,7 +25,8 @@ CREATE TABLE IF NOT EXISTS work_hours (
         CHECK (cash_payment_type IS NULL OR cash_payment_type IN ('FULL', 'PARTIAL')),
     partial_payment_amount NUMERIC(10, 2) DEFAULT 0,
     paid_at TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (work_site_id) REFERENCES contractor_work_sites(id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_employees_full_name
@@ -43,6 +45,9 @@ CREATE TABLE IF NOT EXISTS contractors (
     id INTEGER PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     phone_number VARCHAR(30),
+    customer_type VARCHAR(20) NOT NULL DEFAULT 'OWNER'
+        CHECK (customer_type IN ('BUILDER', 'OWNER')),
+    billing_name VARCHAR(120),
     address VARCHAR(255),
     notes VARCHAR(1000),
     amount_paid_to_date NUMERIC(10, 2) NOT NULL DEFAULT 0,
@@ -55,8 +60,16 @@ CREATE TABLE IF NOT EXISTS contractor_work_sites (
     location VARCHAR(255) NOT NULL,
     quoted_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
     square_area NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    unit_of_measurement VARCHAR(20) NOT NULL DEFAULT 'SFT'
+        CHECK (unit_of_measurement IN ('LSM', 'SFT')),
+    gst_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    status VARCHAR(20) NOT NULL DEFAULT 'IN_PROGRESS'
+        CHECK (status IN ('IN_PROGRESS', 'COMPLETE')),
     FOREIGN KEY (contractor_id) REFERENCES contractors(id) ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_work_hours_work_site_id
+    ON work_hours(work_site_id);
 
 CREATE INDEX IF NOT EXISTS idx_contractors_name
     ON contractors(name);
